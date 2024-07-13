@@ -73,18 +73,26 @@ pipeline {
             }
         }
 
-        stage('Deploy on Remote Server') {
-            steps {
-                echo 'Pull Docker Image & Docker Image Run on Remote Server'
-                sshagent (credentials: ['ssh']) {
-                    sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker pull ${IMAGE_NAME}'"
-                    sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker ps -q --filter name=${CONTAINER_NAME} | grep -q . && sudo docker rm -f \$(sudo docker ps -aq --filter name=${CONTAINER_NAME})'"
-                    sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker run -d --name ${CONTAINER_NAME} -p 3000:3000 ${IMAGE_NAME}'"
-                    // 명령 실행 후 결과 확인
-                    sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'docker ps -a'"
-                }
-            }
+stage('Deploy on Remote Server') {
+    steps {
+        echo 'Pull Docker Image & Docker Image Run on Remote Server'
+        sshagent (credentials: ['ssh']) {
+            // 이미지 다운로드
+            sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker pull ${IMAGE_NAME}'"
+            // 실행 중인 동일 이름의 컨테이너가 있는지 확인하고, 있으면 제거
+            sh """
+            ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker ps -q --filter name=${CONTAINER_NAME} | grep -q . && echo \"Removing existing container\" && sudo docker rm -f \$(sudo docker ps -aq --filter name=${CONTAINER_NAME}) || echo \"No existing container to remove.\"'
+            """
+            // 새 컨테이너 실행
+            sh """
+            ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker run -d --name ${CONTAINER_NAME} -p 3000:3000 ${IMAGE_NAME} && echo \"Container started successfully\" || echo \"Failed to start container\"'
+            """
+            // 실행 중인 모든 컨테이너 상태 확인
+            sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'echo \"Current Docker containers:\" && sudo docker ps -a'"
         }
+    }
+}
+
 
     }
 }
