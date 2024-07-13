@@ -1,5 +1,10 @@
 pipeline {
     agent any
+
+
+    tools {
+        nodejs 'Node-20'
+    }
     environment {
         // 환경 변수 설정
         DOCKER_TAG = "latest"
