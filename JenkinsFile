@@ -26,7 +26,7 @@ pipeline {
 
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: "https://github.com/hennible0612/React_App_Repo"
+                git branch: 'main', url: "https://github.com/hennible0612/front_test"
             }
         }
 
@@ -72,8 +72,9 @@ pipeline {
             steps {
                 echo 'Pull Docker Image & Docker Image Run on Remote Server'
                 sshagent (credentials: ['ssh']) {
-                    sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker pull ${IMAGE_NAME}'"
-                    sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker run -d --name ${CONTAINER_NAME} -p 3000:3000 ${IMAGE_NAME}'"
+                     sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker pull ${IMAGE_NAME}'"
+                      sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker ps -q --filter name=${CONTAINER_NAME} | grep -q . && sudo docker rm -f \$(sudo docker ps -aq --filter name=${CONTAINER_NAME})'"
+                      sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker run -d --name ${CONTAINER_NAME} -p 3000:3000 ${IMAGE_NAME}'"
                 }
             }
         }
