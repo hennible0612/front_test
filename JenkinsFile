@@ -27,7 +27,7 @@ pipeline {
 
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: "https://github.com/hennible0612/Docker_Jenkins_CI-CD"
+                git branch: 'main', url: "https://github.com/hennible0612/front_test"
             }
         }
 
