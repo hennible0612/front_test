@@ -15,7 +15,7 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn React testestestestset
+          뭔가 이상한데 이거 아닌거 같은데....
         </a>
       </header>
     </div>
