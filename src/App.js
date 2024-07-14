@@ -15,7 +15,7 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          뭔가 이상한데 이거 아닌거 같은데....
+          ㅇㄴㄹㅇㄴㄹㄴㅇㄹ ㅇㄴ ㄹ
         </a>
       </header>
     </div>
