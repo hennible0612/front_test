@@ -73,21 +73,36 @@ pipeline {
             }
         }
 
-stage('Deploy on Remote Server') {
-    steps {
-        echo 'Pull Docker Image & Docker Image Run on Remote Server'
-            sshagent (credentials: ['ssh']) {
-                // 이미지 다운로드
-                sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker pull ${IMAGE_NAME}'"
-                // 기존 컨테이너 제거
-                sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'docker rm -f \$(docker ps -aq --filter name=${CONTAINER_NAME})'"
-                // 새 컨테이너 시작
-                sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker run -d --name ${CONTAINER_NAME} -p 3000:3000 ${IMAGE_NAME}'"
-                // 컨테이너 상태 확인
-                sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'docker ps -a'"
+//         stage('Deploy on Remote Server') {
+//             steps {
+//                 echo 'Pull Docker Image & Docker Image Run on Remote Server'
+//                     sshagent (credentials: ['ssh']) {
+//                         // 이미지 다운로드
+//                         sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker pull ${IMAGE_NAME}'"
+//                         // 기존 컨테이너 제거
+//                         sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'docker rm -f \$(docker ps -aq --filter name=${CONTAINER_NAME})'"
+//                         // 새 컨테이너 시작
+//                         sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker run -d --name ${CONTAINER_NAME} -p 3000:3000 ${IMAGE_NAME}'"
+//                         // 컨테이너 상태 확인
+//                         sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'docker ps -a'"
+//                     }
+//             }
+//         }
+
+        stage('Deploy with Docker Compose') {
+            steps {
+                echo 'Deploy services using Docker Compose on Remote Server'
+                sshagent (credentials: ['ssh']) {
+                    // 원격 서버에 Docker Compose 파일 복사
+                    sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${REMOTE_USER}@${REMOTE_HOST}:~/"
+
+                    // 원격 서버에서 Docker Compose를 사용하여 서비스 배포
+                    sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker-compose pull'"
+                    sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker-compose down'"
+                    sh "ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} 'sudo docker-compose up -d'"
+                }
             }
-    }
-}
+        }
 
 
     }
